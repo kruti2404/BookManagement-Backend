@@ -1,6 +1,8 @@
 
-using BookManagement_Backend.Data;
+using Data;
 using Microsoft.EntityFrameworkCore;
+using Repository;
+using Services;
 
 namespace BookManagement_Backend
 {
@@ -10,8 +12,14 @@ namespace BookManagement_Backend
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            builder.Services.AddDbContext<ProgramDbContent>(options =>
+            {
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+            });
             // Add services to the container.
+            builder.Services.AddTransient<Bookservices>();
 
+            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
             builder.Services.AddDbContext<ProgramDbContent>(options =>
