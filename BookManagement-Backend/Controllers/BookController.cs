@@ -1,17 +1,14 @@
-﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Services;
 using DTOs;
 using Models.Shared;
-using System;
 namespace BookManagement_Backend.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     public class BookController : Controller
     {
-
-        private Bookservices _bookservices { get; set; }
+        private readonly Bookservices _bookservices;
         public BookController(Bookservices bookservices)
         {
             _bookservices = bookservices;
@@ -85,13 +82,12 @@ namespace BookManagement_Backend.Controllers
         {
             try
             {
-
-            Console.WriteLine("The edit is called ");
-            Console.WriteLine("Author name is " + editedBook.AuthorName);
-            var result = await _bookservices.EditBook(editedBook.Id, editedBook);
-            return Ok(result);
+                Console.WriteLine("The edit is called ");
+                Console.WriteLine("Author name is " + editedBook.AuthorName);
+                var result = await _bookservices.EditBook(editedBook.Id, editedBook);
+                return Ok(result);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return Ok(new Response
                 {
@@ -101,5 +97,41 @@ namespace BookManagement_Backend.Controllers
             }
         }
 
+        [HttpPost("deleteBook")]
+        public async Task<IActionResult> deleteBook(Guid id)
+        {
+            try
+            {
+                var response = await _bookservices.deleteBook(id);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+        [HttpPost("createBook")]
+        public async Task<IActionResult> createBook(createBookDTO createbook)
+        {
+            try
+            {
+                Console.WriteLine("createBook of Bookcontroller executing ");
+                if (!ModelState.IsValid)
+                {
+                    return View(new Response
+                    {
+                        StatusCode = 1,
+                        Message = "Some field is empty"
+                    });
+                }
+                var response =await _bookservices.createBook(createbook);
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }
