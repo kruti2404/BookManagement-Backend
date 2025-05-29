@@ -183,7 +183,7 @@ namespace Services
             }
         }
 
-        public async Task<Response> createBook(createBookDTO createBook)
+        public async Task<Response> createBook( createBookDTO createBook)
         {
             try
             {
@@ -191,7 +191,7 @@ namespace Services
 
 
                 var allAuthor = await _uowInstance.AuthorGenericRepo.GetAll();
-                var author = allAuthor.FirstOrDefault(auth => auth.Name == createBook.AuthorName);
+                var author = allAuthor.FirstOrDefault(auth => auth.Name == createBook.Author);
 
                 if (author == null)
                 {
@@ -203,7 +203,7 @@ namespace Services
                     };
                 }
 
-                var categoryNames = createBook.CategoriesName.Split(", ", StringSplitOptions.RemoveEmptyEntries);
+                var categoryNames = createBook.Categories.Split(", ", StringSplitOptions.RemoveEmptyEntries);
                 var Categories = (await _uowInstance.categoriesGenericRepo.GetAll()).Where(cat => categoryNames.Contains(cat.Name)).ToList();
 
                 if (Categories.Count == 0)
@@ -225,7 +225,7 @@ namespace Services
                     };
                 }
 
-                var publication = (await _uowInstance.PublicationGenericRepo.GetAll()).FirstOrDefault(publication => publication.Name == createBook.PublicationName);
+                var publication = (await _uowInstance.PublicationGenericRepo.GetAll()).FirstOrDefault(publication => publication.Name == createBook.Publisher);
                 if (publication == null)
                 {
                     Console.WriteLine("Publication could not Found");
@@ -253,7 +253,7 @@ namespace Services
                     Id = new Guid(),
                     Title = createBook.Title,
                     Description = createBook.Description,
-                    NoOfPages = createBook.Pages,
+                    NoOfPages = Convert.ToInt32(createBook.Pages),
                     Categories = Categories,
                     PublicationId = publication.Id,
                     Publication = publication,

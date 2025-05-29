@@ -41,23 +41,23 @@ namespace Repository
             _context.Database.RollbackTransaction();
         }
 
-        public void Dispose()
-        {
-            _context.Dispose();
-        }
+        //public void Dispose()
+        //{
+        //    _context.Dispose();
+        //}
 
-        public void Dispose(bool disposing)
-        {
-            if (!isDisposed)
-            {
-                if (disposing)
-                {
-                    _context.Dispose();
-                    GC.SuppressFinalize(this);
-                }
-                isDisposed = true;
-            }
+        //public void Dispose(bool disposing)
+        //{
+        //    if (!isDisposed)
+        //    {
+        //        if (disposing)
+        //        {
+        //            _context.Dispose();
+        //            GC.SuppressFinalize(this);
+        //        }
+        //        isDisposed = true;
+        //    }
 
-        }
+        //}
     }
 }

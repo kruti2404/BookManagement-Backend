@@ -111,7 +111,7 @@ namespace BookManagement_Backend.Controllers
             }
         }
         [HttpPost("createBook")]
-        public async Task<IActionResult> createBook(createBookDTO createbook)
+        public async Task<IActionResult> createBook([FromForm] createBookDTO createbook)
         {
             try
             {
