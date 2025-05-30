@@ -12,6 +12,8 @@ namespace Models.Book
         public string Description { get; set; }
         [DisplayName("No of Pages")]
         public int NoOfPages { get; set; }
+        public string Language {  get; set; }
+        public int Price { get; set; }
         public ICollection<Category> Categories { get; set; }
         public Guid AuthorId { get; set; }
         public Guid PublicationId { get; set; }

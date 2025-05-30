@@ -4,3 +4,11 @@ GET {{BookManagement_Backend_HostAddress}}/weatherforecast/
 Accept: application/json
 
 ###
+
+GET {{BookManagement_Backend_HostAddress}}/api/Book/
+
+###
+
+GET {{BookManagement_Backend_HostAddress}}/api/Book/getBooks?formType=Reactive%20Form
+
+}

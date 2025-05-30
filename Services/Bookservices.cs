@@ -34,6 +34,8 @@ namespace Services
                                                 book.Title,
                                                 book.Description,
                                                 book.NoOfPages,
+                                                book.Price,
+                                            book.Language,
                                                 book.Categories,
                                                 book.Author,
                                                 book.Publication
@@ -47,7 +49,7 @@ namespace Services
 
         public async Task<getBookDTO> getBookById(Guid id)
         {
-            Console.WriteLine("Book getting ");
+            Console.WriteLine("Book getting ", id);
             var book = await _bookrepository.GetById(id);
             if (book == null)
             {
@@ -59,6 +61,8 @@ namespace Services
                                             book.Title,
                                             book.Description,
                                             book.NoOfPages,
+                                            book.Price,
+                                            book.Language,
                                             book.Categories,
                                             book.Author,
                                             book.Publication
@@ -158,6 +162,7 @@ namespace Services
         }
         public async Task<Response> deleteBook(Guid id)
         {
+            Console.WriteLine("deltebook at the service with id ", id);
             var book = await _bookrepository.GetById(id);
             if (book == null)
             {
@@ -182,7 +187,7 @@ namespace Services
                 throw ex;
             }
         }
-
+        
         public async Task<Response> createBook( createBookDTO createBook)
         {
             try
@@ -254,6 +259,8 @@ namespace Services
                     Title = createBook.Title,
                     Description = createBook.Description,
                     NoOfPages = Convert.ToInt32(createBook.Pages),
+                    Price = Convert.ToInt32(createBook.Price),
+                    Language = createBook.Language,
                     Categories = Categories,
                     PublicationId = publication.Id,
                     Publication = publication,
