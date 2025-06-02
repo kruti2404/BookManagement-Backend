@@ -1,12 +1,9 @@
-﻿using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using Models.Shared;
+﻿using Models.Shared;
 using DTOs;
 using Repository;
 using Data;
-using Microsoft.VisualBasic;
 using Models.Book;
-using Microsoft.EntityFrameworkCore.Diagnostics;
+using System.Threading.Tasks;
 namespace Services
 {
     public class Bookservices
@@ -91,14 +88,16 @@ namespace Services
 
                 result.Title = newBook.Title;
                 result.Description = newBook.Description;
-                result.NoOfPages = newBook.Pages;
+                result.NoOfPages = Convert.ToInt32(newBook.Pages);
+                result.Price = Convert.ToInt32(newBook.Price);
+                result.Language = newBook.Language;
 
-                Console.WriteLine("Author is " + newBook.AuthorName);
+                Console.WriteLine("Author is " + newBook.Author);
 
                 var allAuthor = await _uowInstance.AuthorGenericRepo.GetAll();
 
 
-                var author = allAuthor.FirstOrDefault(auth => auth.Name == newBook.AuthorName);
+                var author = allAuthor.FirstOrDefault(auth => auth.Name == newBook.Author);
 
                 if (author == null)
                 {
@@ -112,7 +111,7 @@ namespace Services
 
                 result.Author = author;
 
-                var categoryNames = newBook.CategoriesName.Split(", ", StringSplitOptions.RemoveEmptyEntries);
+                var categoryNames = newBook.Categories.Split(", ", StringSplitOptions.RemoveEmptyEntries);
                 var Categories = (await _uowInstance.categoriesGenericRepo.GetAll()).Where(cat => categoryNames.Contains(cat.Name)).ToList();
                 if (Categories.Count == 0)
                 {
@@ -134,7 +133,7 @@ namespace Services
                 }
                 result.Categories = Categories;
 
-                var publication = (await _uowInstance.PublicationGenericRepo.GetAll()).FirstOrDefault(publication => publication.Name == newBook.PublicationName);
+                var publication = (await _uowInstance.PublicationGenericRepo.GetAll()).FirstOrDefault(publication => publication.Name == newBook.Publisher);
                 if (publication == null)
                 {
                     Console.WriteLine("Publication not Found");
@@ -187,8 +186,33 @@ namespace Services
                 throw ex;
             }
         }
-        
-        public async Task<Response> createBook( createBookDTO createBook)
+        public async Task<Response> getData()
+        {
+            try
+            {
+
+                var author = await _uowInstance.AuthorGenericRepo.GetAll();
+                var category = await _uowInstance.categoriesGenericRepo.GetAll();
+                var publisher = await _uowInstance.PublicationGenericRepo.GetAll();
+                var response = new Response
+                {
+                    StatusCode = 0,
+                    Message = "",
+                    Data = new
+                    {
+                        author = author,
+                        category = category,
+                        publisher = publisher
+                    }
+                };
+                return response;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+        public async Task<Response> createBook(createBookDTO createBook)
         {
             try
             {
@@ -277,17 +301,70 @@ namespace Services
                 {
                     StatusCode = 0,
                     Message = "Successfully created the new Book"
-
                 };
 
             }
             catch (Exception ex)
             {
-                //_uowInstance.RollBack();
+                _uowInstance.RollBack();
                 throw ex;
             }
 
         }
 
+        public async Task<IEnumerable<getBookDTO>> FilterBook(filterBookDTO filterData)
+        {
+            try
+            {
+                var res = await _bookrepository.Filterbook(filterData);
+                if (res == null)
+                {
+                    Console.WriteLine("The data is null");
+                }
+                List<getBookDTO> result = new List<getBookDTO>();
+
+                foreach (var book in res)
+                {
+                    var getbookdto = new getBookDTO(book.Id,
+                                                    book.Title,
+                                                    book.Description,
+                                                    book.NoOfPages,
+                                                    book.Price,
+                                                    book.Language,
+                                                    book.Categories,
+                                                    book.Author,
+                                                    book.Publication
+                    );
+
+                    result.Add(getbookdto);
+                }
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+
+        public async Task<int> getBookCount(filterBookDTO filterData)
+        {
+            try
+            {
+                var res = await _bookrepository.getBooksCount(filterData);
+                if (res == 0)
+                {
+                    Console.WriteLine("The data is null");
+                }
+
+
+                return res;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
     }
 }

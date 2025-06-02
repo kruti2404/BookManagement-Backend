@@ -2,6 +2,8 @@
 using Services;
 using DTOs;
 using Models.Shared;
+using System.Threading.Tasks;
+using Azure.Core;
 namespace BookManagement_Backend.Controllers
 {
     [ApiController]
@@ -126,7 +128,7 @@ namespace BookManagement_Backend.Controllers
             }
         }
         [HttpPost("editBook")]
-        public async Task<IActionResult> editBook([FromBody] editBookDto editedBook)
+        public async Task<IActionResult> editBook([FromForm] editBookDto editedBook)
         {
             IActionResult response = BadRequest();
             _logger.LogInformation("editBook Of the BookController with book id " + editedBook.Id);
@@ -210,5 +212,80 @@ namespace BookManagement_Backend.Controllers
                 return response;
             }
         }
+        [HttpGet("getData")]
+        public async Task<IActionResult> getData()
+        {
+
+            IActionResult response = BadRequest();
+            _logger.LogInformation("createBook of Bookcontroller with id is ");
+
+            try
+            {
+                var res = await _bookservices.getData();
+                return Ok(res);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Error Occured : " + ex.Message);
+                response = Ok(new Response
+                {
+                    StatusCode = 0,
+                    Message = "Unknown error ocured.",
+                    Data = string.Empty,
+                });
+                return response;
+            }
+        }
+        [HttpGet("filterData")]
+        public async Task<IActionResult> FilterBook([FromQuery] filterBookDTO filterData)
+        {
+            IActionResult response = BadRequest();
+            _logger.LogInformation("FilterBook of Bookcontroller with id is ");
+
+            try
+            {
+                var books = await _bookservices.FilterBook(filterData);
+                var booksCount = await _bookservices.getBookCount(filterData);
+                if (booksCount == 0)
+                {
+                    response = Ok(new Response
+                    {
+                        StatusCode = 1,
+                        Message = "No result found ",
+                        Data = string.Empty
+                    });
+                    return response;
+
+                }
+
+
+                Console.WriteLine("Filter form executed successfully.");
+
+                return Ok(new Response
+                {
+                    StatusCode = 0,
+                    Message = "Books filtered successfully.",
+                    Data = new
+                    {
+                        books,
+                        count = booksCount
+                    }
+                });
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Error Occured : " + ex.Message);
+                response = Ok(new Response
+                {
+                    StatusCode = 0,
+                    Message = "Unknown error ocured.",
+                    Data = string.Empty,
+                });
+                return response;
+            }
+        }
+        
     }
+
 }
