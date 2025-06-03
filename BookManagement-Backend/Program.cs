@@ -18,6 +18,7 @@ namespace BookManagement_Backend
             });
             // Add services to the container.
             builder.Services.AddTransient<Bookservices>();
+            builder.Services.AddTransient<SpBookService>();
 
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 

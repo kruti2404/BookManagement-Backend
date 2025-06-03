@@ -20,5 +20,7 @@ namespace DTOs
 
         public string pageNumber { get; set; }
         public string pageSize { get; set; }
+        public string sortColumn { get; set; }
+        public string sortDirection { get; set; }
     }
 }

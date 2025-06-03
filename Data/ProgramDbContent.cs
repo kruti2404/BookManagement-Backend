@@ -1,11 +1,11 @@
 ﻿using Models.Book;
 using Microsoft.EntityFrameworkCore;
 namespace Data
-    
+
 {
     public class ProgramDbContent : DbContext
     {
-        public ProgramDbContent(DbContextOptions<ProgramDbContent> options) : base(options){ }
+        public ProgramDbContent(DbContextOptions<ProgramDbContent> options) : base(options) { }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -20,7 +20,7 @@ namespace Data
             modelBuilder.Entity<Book>()
                 .HasMany(book => book.Categories)
                 .WithMany(category => category.Books);
-            
+
 
             // one to many relationship with Book and Author
             modelBuilder.Entity<Book>()
@@ -49,17 +49,20 @@ namespace Data
             modelBuilder.Entity<Category>()
                 .HasKey(category => category.Id)
                 .IsClustered();
-            
-            
+
+
             //Cluster Index for author 
             modelBuilder.Entity<Author>()
                 .HasKey(author => author.Id)
                 .IsClustered();
-                
+
             //Cluster Index for FormType 
             modelBuilder.Entity<FormType>()
                 .HasKey(Form => Form.Id)
                 .IsClustered();
+
+            // Because it's not a tracked entity
+            modelBuilder.Entity<FilteredBookDTO>().HasNoKey();
 
 
         }
@@ -68,6 +71,7 @@ namespace Data
         public DbSet<Category> Categories { get; set; }
         public DbSet<Author> Authors { get; set; }
         public DbSet<Publication> Publications { get; set; }
+        public DbSet<FilteredBookDTO> FilteredBookDTOs { get; set; }
 
 
     }

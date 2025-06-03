@@ -9,7 +9,7 @@ namespace DTOs
 {
     public class getBookDTO
     {
-        public getBookDTO(Guid id, string title, string description, int pages, int price, string language, ICollection<Category> categories, Author author, Publication publisher)
+        public getBookDTO(Guid id, string title, string description, int pages, int price, string language, ICollection<Category> categories, Author? author, Publication? publisher)
         {
             this.id = id;
             this.title = title;
@@ -21,8 +21,8 @@ namespace DTOs
 
 
 
-            this.author = author.Name;
-            this.publisher = publisher.Name;
+            this.author = author != null ? author.Name : string.Empty;
+            this.publisher = publisher!= null ?  publisher.Name : string.Empty;
             this.price = price;
             this.language = language;
         }

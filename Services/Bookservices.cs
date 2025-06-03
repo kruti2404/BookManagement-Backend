@@ -4,6 +4,7 @@ using Repository;
 using Data;
 using Models.Book;
 using System.Threading.Tasks;
+using System.ComponentModel;
 namespace Services
 {
     public class Bookservices
@@ -316,7 +317,13 @@ namespace Services
         {
             try
             {
-                var res = await _bookrepository.Filterbook(filterData);
+                Boolean descending = false;
+
+                if (filterData.sortDirection == "DESC")
+                {
+                    descending = true;
+                }
+                var res = await _bookrepository.Filterbook(filterData, descending);
                 if (res == null)
                 {
                     Console.WriteLine("The data is null");
