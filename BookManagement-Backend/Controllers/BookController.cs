@@ -106,7 +106,7 @@ namespace BookManagement_Backend.Controllers
 
                     });
                 }
-                _logger.LogError("Exited the getBookById successfully ");
+                _logger.LogInformation("Exited the getBookById successfully ");
                 response = Ok(new Response
                 {
                     StatusCode = 0,

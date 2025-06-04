@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using DTOs;
 using Microsoft.AspNetCore.Mvc;
 using Models.Shared;
@@ -27,11 +26,11 @@ namespace BookManagement_Backend.Controllers
 
             try
             {
-               var result =  await _bookservices.filterData(filterBook);
+                var result = await _bookservices.filterData(filterBook);
                 response = Ok(new Response
                 {
                     StatusCode = 0,
-                    Message = "Index called successfully ",
+                    Message = "FilterData called successfully ",
                     Data = new
                     {
                         result.books,
@@ -52,7 +51,31 @@ namespace BookManagement_Backend.Controllers
                 return response;
             }
 
-            return View();
+        }
+        [HttpPost("createOrEdit")]
+        public async Task<IActionResult> createOrEdit([FromForm] createOrEditBook createOrEditBook)
+        {
+
+            IActionResult response = BadRequest();
+            _logger.LogInformation("Entered the createOrEdit Method of Strored Procedure");
+
+            try
+            {
+                var result = await _bookservices.createOrEdit(createOrEditBook);
+                response = Ok(result);
+                return response;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Error: " + ex.Message);
+                response = Ok(new Response
+                {
+                    StatusCode = 0,
+                    Message = "Unknown error ocured.",
+                    Data = string.Empty,
+                });
+                return response;
+            }
         }
     }
 }

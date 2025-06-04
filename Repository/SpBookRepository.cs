@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Text;
+﻿using System.Data;
 using System.Threading.Tasks;
 using Data;
 using DTOs;
@@ -53,8 +49,6 @@ namespace Repository
                                         new SqlParameter("@pageSize", Convert.ToInt32(filterBook.pageSize)),
                                         new SqlParameter("@sortColumn", filterBook.sortColumn ?? "Title"),
                                         new SqlParameter("@sortDirection", filterBook.sortDirection ?? "ASC"),
-
-                                        // OUTPUT parameter
                                         new SqlParameter
                                         {
                                             ParameterName = "@TotalCount",
@@ -63,15 +57,22 @@ namespace Repository
                                         }
                 };
 
-                // Call stored procedure
                 var books = await _Context.FilteredBookDTOs
                     .FromSqlRaw("EXEC FilterBook @Name, @Description, @Pages, @Price, @Language, @Author, @Category, @Publisher, @form, @pageNumber, @pageSize, @sortColumn, @sortDirection, @TotalCount OUTPUT", parameters.ToArray())
                     .ToListAsync();
+                Console.WriteLine(books.Any());
+                if (books.Any())
+                {
+                    foreach (var item in books)
+                    {
+                        Console.WriteLine(item.Author);
+                    }
+                }
 
                 int totalCount = (int)parameters.Last().Value;
                 Console.WriteLine("The count is " + totalCount);
                 Console.WriteLine("The Result is " + books);
-                
+
                 return (books, totalCount);
             }
             catch (Exception)
@@ -79,6 +80,40 @@ namespace Repository
                 throw;
             }
         }
+        public async Task<int> createOrEdit(createEditReqDTO createEditDTO)
+        {
+            try
+            {
+                var parameters = new List<SqlParameter>
+                                {
+                                    new SqlParameter("@EditID", createEditDTO.Id == Guid.Empty ? DBNull.Value : createEditDTO.Id),
+                                    new SqlParameter("@Title", createEditDTO.Title ?? ""),
+                                    new SqlParameter("@Description", createEditDTO.Description ?? ""),
+                                    new SqlParameter("@NoOfPages", string.IsNullOrEmpty(createEditDTO.Pages) ? 0 : Convert.ToInt32(createEditDTO.Pages)),
+                                    new SqlParameter("@Price", string.IsNullOrEmpty(createEditDTO.Price) ? 0 : Convert.ToInt32(createEditDTO.Price)),
+                                    new SqlParameter("@Language", createEditDTO.Language ?? ""),
+                                    new SqlParameter("@PublicationId", createEditDTO.PublisherId),
+                                    new SqlParameter("@AuthorId", createEditDTO.AuthorId),
+                                    new SqlParameter("@formTypeId", createEditDTO.formTypeID),
+                                    new SqlParameter("@CategoriesIds", createEditDTO.CategoriesTD ?? "")
+                                };
+
+                Console.WriteLine("Entered the createOrEditBook method");
+                Console.WriteLine("Passing categories are: " + createEditDTO.CategoriesTD);
+
+                var result = await _Context.Database.ExecuteSqlRawAsync(
+                    "Exec createAndEdit @EditID, @Title, @Description, @NoOfPages, @Price, @Language, @PublicationId, @AuthorId, @formTypeId, @CategoriesIds",
+                    parameters
+                );
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error in createOrEdit: " + ex.Message);
+                throw;
+            }
+        }
+
 
     }
 }
