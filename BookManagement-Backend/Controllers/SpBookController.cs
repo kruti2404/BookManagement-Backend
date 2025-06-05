@@ -27,16 +27,7 @@ namespace BookManagement_Backend.Controllers
             try
             {
                 var result = await _bookservices.filterData(filterBook);
-                response = Ok(new Response
-                {
-                    StatusCode = 0,
-                    Message = "FilterData called successfully ",
-                    Data = new
-                    {
-                        result.books,
-                        result.Totalcount
-                    }
-                });
+                response = Ok(result);
                 return response;
             }
             catch (Exception ex)

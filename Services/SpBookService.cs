@@ -19,39 +19,57 @@ namespace Services
 
         }
 
-        public async Task<(IEnumerable<getBookDTO> books, int Totalcount)> filterData(filterBookDTO filterData)
+        public async Task<Response> filterData(filterBookDTO filterData)
         {
             try
             {
                 var result = await _bookrepository.Filterbook(filterData);
 
-
                 List<getBookDTO> getbookResult = new List<getBookDTO>();
-                var allauthors = await _UnitOfWork.AuthorGenericRepo.GetAll();
-                foreach (var item in allauthors)
-                {
-                    Console.WriteLine("Author is " + item.Name);
+                var allAuthors = await _UnitOfWork.AuthorGenericRepo.GetAll();
+                var allCategories = await _UnitOfWork.categoriesGenericRepo.GetAll();
+                var allPublication = await _UnitOfWork.PublicationGenericRepo.GetAll();
 
-                }
                 foreach (var book in result.books)
                 {
-                    var allCategories = await _UnitOfWork.categoriesGenericRepo.GetAll();
+                    var Categories = new List<Category>();
 
-                    var category = new List<Category>();
-                    if (!string.IsNullOrEmpty(filterData.Category))
+                    Categories = allCategories.Where(cat => (book.Categories).Split(", ").Contains(cat.Name)).ToList();
+                    if (Categories == null || !Categories.Any())
                     {
-
-                        category = allCategories
-                             .Where(cat => filterData.Category.Split(", ").Contains(cat.Name))
-                             .ToList();
+                        Console.WriteLine("categories is Null");
+                        return new Response
+                        {
+                            StatusCode = 1,
+                            Message = "categories Can not be Found",
+                            Data = string.Empty
+                        };
                     }
 
-                    var authors = await _UnitOfWork.AuthorGenericRepo.GetAll();
-                    var author = authors.Where(auth => auth.Name == filterData.Author).FirstOrDefault();
-                    Console.WriteLine("Author is ", authors);
-                    var AllPublications = await _UnitOfWork.PublicationGenericRepo.GetAll();
-                    var publication = AllPublications.Where(pub => pub.Name == filterData.Publisher).FirstOrDefault();
 
+                    var author = allAuthors.Where(auth => auth.Name == book.Author).FirstOrDefault();
+                    if (author == null)
+                    {
+                        Console.WriteLine("Author is Null");
+                        return new Response
+                        {
+                            StatusCode = 1,
+                            Message = "Author Can not be Found",
+                            Data = string.Empty
+                        };
+                    }
+                    var publication = allPublication.Where(pub => pub.Name == book.Publisher).FirstOrDefault();
+                    if (publication == null)
+                    {
+                        Console.WriteLine("Publisher is Null");
+                        return new Response
+                        {
+                            StatusCode = 1,
+                            Message = "Publisher Can not be Found",
+                            Data = string.Empty
+                        };
+                    }
+                    Console.WriteLine("Publisher is " + publication.Name);
 
                     var getbookdto = new getBookDTO(book.Id,
                                                     book.Title,
@@ -59,7 +77,7 @@ namespace Services
                                                     book.NoOfPages,
                                                     book.Price,
                                                     book.Language,
-                                                    category,
+                                                    Categories,
                                                     author,
                                                     publication
                     );
@@ -67,10 +85,16 @@ namespace Services
                     getbookResult.Add(getbookdto);
                 }
                 Console.WriteLine(result.totalCount);
-                return (getbookResult, result.totalCount);
-
-
-
+                return new Response
+                {
+                    StatusCode = 0,
+                    Message = "editOrCreateBook req executed successfully ",
+                    Data = new
+                    {
+                        books = getbookResult,
+                        count = result.totalCount
+                    }
+                };
             }
             catch (Exception ex)
             {
@@ -110,7 +134,7 @@ namespace Services
 
 
                 var allCategories = await _UnitOfWork.categoriesGenericRepo.GetAll();
-                var Categories = allCategories.Where(cat => (createOrEditBook.Categories).Split(",").Contains(cat.Name));
+                var Categories = allCategories.Where(cat => (createOrEditBook.Categories).Split(", ").Contains(cat.Name));
                 if (Categories == null || Categories.Count() <= 0)
                 {
                     return new Response
@@ -132,7 +156,7 @@ namespace Services
                 }
 
                 var allFormTYpe = await _UnitOfWork.formTypeRepo.GetAll();
-                var formType = allFormTYpe.Where(form => form.Name == createOrEditBook.Form).FirstOrDefault();
+                var formType = allFormTYpe.Where(form => form.Name == createOrEditBook.FormType).FirstOrDefault();
                 if (formType == null)
                 {
                     return new Response
