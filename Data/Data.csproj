@@ -16,6 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\AuthDTOs\AuthDTOs.csproj" />
     <ProjectReference Include="..\Models\Models.csproj" />
   </ItemGroup>
 

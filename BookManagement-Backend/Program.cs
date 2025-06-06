@@ -1,6 +1,11 @@
 
+using System.Text;
+using AuthDTOs.Models;
 using Data;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Repository;
 using Services;
 
@@ -16,9 +21,42 @@ namespace BookManagement_Backend
             {
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
             });
+
+            builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
+                            .AddEntityFrameworkStores<ProgramDbContent>()
+                            .AddDefaultTokenProviders();
+
+            builder.Services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = false,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Key"]))
+                };
+                options.Events = new JwtBearerEvents
+                {
+                    OnAuthenticationFailed = context =>
+                    {
+                        Console.WriteLine("Token failed: " + context.Exception.Message);
+                        return Task.CompletedTask;
+                    }
+                };
+
+            });
+
             // Add services to the container.
             builder.Services.AddTransient<Bookservices>();
             builder.Services.AddTransient<SpBookService>();
+            builder.Services.AddTransient<JwtService>();
 
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
@@ -55,12 +93,12 @@ namespace BookManagement_Backend
             app.UseCors();
 
             app.UseHttpsRedirection();
-
+            app.UseAuthentication();
             app.UseAuthorization();
 
 
             app.MapControllers();
-            
+
             app.Run();
         }
     }

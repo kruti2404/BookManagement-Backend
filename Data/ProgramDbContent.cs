@@ -1,9 +1,11 @@
 ﻿using Models.Book;
 using Microsoft.EntityFrameworkCore;
+using AuthDTOs.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 namespace Data
 
 {
-    public class ProgramDbContent : DbContext
+    public class ProgramDbContent : IdentityDbContext<ApplicationUser>
     {
         public ProgramDbContent(DbContextOptions<ProgramDbContent> options) : base(options) { }
 

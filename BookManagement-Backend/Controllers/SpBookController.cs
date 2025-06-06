@@ -1,11 +1,12 @@
-﻿using System.Threading.Tasks;
-using DTOs;
+﻿using DTOs;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Models.Shared;
 using Services;
 
 namespace BookManagement_Backend.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class SpBookController : Controller

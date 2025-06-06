@@ -16,7 +16,6 @@ namespace Services
         {
             _UnitOfWork = unitOfWork;
             _bookrepository = new SpBookRepository(context);
-
         }
 
         public async Task<Response> filterData(filterBookDTO filterData)

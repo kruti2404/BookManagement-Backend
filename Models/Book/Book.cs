@@ -1,6 +1,4 @@
-﻿using System;
-using System.ComponentModel;
-using Models.Book;
+﻿using System.ComponentModel;
 
 namespace Models.Book
 {

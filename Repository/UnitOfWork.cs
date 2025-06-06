@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-using Data;
-using Microsoft.EntityFrameworkCore;
+﻿using Data;
 using Microsoft.EntityFrameworkCore.Storage;
 using Models.Book;
 

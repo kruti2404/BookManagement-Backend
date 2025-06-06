@@ -2,10 +2,10 @@
 using Services;
 using DTOs;
 using Models.Shared;
-using System.Threading.Tasks;
-using Azure.Core;
+using Microsoft.AspNetCore.Authorization;
 namespace BookManagement_Backend.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class BookController : Controller

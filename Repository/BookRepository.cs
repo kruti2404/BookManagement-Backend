@@ -1,15 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Dynamic.Core;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Linq.Dynamic.Core;
 using Data;
 using DTOs;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using Models.Book;
-using static System.Reflection.Metadata.BlobBuilder;
 
 namespace Repository
 {
