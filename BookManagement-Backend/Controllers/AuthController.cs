@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Models.Shared;
 using Services;
 
-namespace Task1.Controllers
+namespace BookManagement_Backend.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
@@ -178,6 +178,7 @@ namespace Task1.Controllers
 
             try
             {
+                Console.WriteLine(tokenDto.username + " and  "+ tokenDto.RefreshToken);
                 var user = await _userManager.FindByNameAsync(tokenDto.username);
                 if (user == null || user.RefreshToken != tokenDto.RefreshToken || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
                 {

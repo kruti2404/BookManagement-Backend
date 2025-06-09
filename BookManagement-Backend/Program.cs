@@ -38,6 +38,7 @@ namespace BookManagement_Backend
                     ValidateIssuer = true,
                     ValidateAudience = false,
                     ValidateLifetime = true,
+                    ClockSkew = TimeSpan.Zero,
                     ValidateIssuerSigningKey = true,
                     ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Key"]))
@@ -46,7 +47,10 @@ namespace BookManagement_Backend
                 {
                     OnAuthenticationFailed = context =>
                     {
-                        Console.WriteLine("Token failed: " + context.Exception.Message);
+                        if (context.Exception.GetType() == typeof(SecurityTokenExpiredException))
+                        {
+                            context.Response.Headers.Append("Token-Expired", "true");
+                        }
                         return Task.CompletedTask;
                     }
                 };
@@ -77,7 +81,7 @@ namespace BookManagement_Backend
             {
                 options.AddDefaultPolicy(policy =>
                 {
-                    policy.WithOrigins(allowedOrigins).AllowAnyHeader().AllowAnyMethod();
+                    policy.WithOrigins(allowedOrigins).AllowAnyHeader().AllowAnyMethod().WithExposedHeaders("Token-Expired");
                 });
             });
 

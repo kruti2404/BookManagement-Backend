@@ -42,7 +42,8 @@ namespace Services
                 var tokenDescriptor = new SecurityTokenDescriptor
                 {
                     Subject = new ClaimsIdentity(claims),
-                    Expires = DateTime.UtcNow.AddDays(int.Parse(_configuration["JwtSettings:ExpireMinutes"])),
+                    Expires = DateTime.UtcNow.AddMinutes(int.Parse(_configuration["JwtSettings:ExpireMinutes"])),
+
                     SigningCredentials = creds,
                     Issuer = _configuration["JwtSettings:Issuer"]
                 };
