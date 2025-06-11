@@ -3,19 +3,27 @@ using Services;
 using DTOs;
 using Models.Shared;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Caching.Memory;
 namespace BookManagement_Backend.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     [ApiController]
     [Route("api/[controller]")]
     public class BookController : Controller
     {
         private readonly Bookservices _bookservices;
         private readonly ILogger<BookController> _logger;
-        public BookController(Bookservices bookservices, ILogger<BookController> logger)
+        private readonly IMemoryCache _memoryCache;
+        private readonly MemoryCacheEntryOptions memoryCacheOptions = new MemoryCacheEntryOptions()
+                        .SetSlidingExpiration(TimeSpan.FromSeconds(60))
+                        .SetAbsoluteExpiration(TimeSpan.FromMinutes(5))
+                        .SetPriority(CacheItemPriority.Normal);
+
+        public BookController(Bookservices bookservices, ILogger<BookController> logger, IMemoryCache memoryCache)
         {
             _bookservices = bookservices;
             _logger = logger;
+            _memoryCache = memoryCache;
         }
 
         [HttpGet(Name = "Index")]
@@ -53,19 +61,25 @@ namespace BookManagement_Backend.Controllers
         {
             IActionResult response = BadRequest();
             _logger.LogInformation("getBooks Of the BookController");
+            string cacheKey = $"getBooks_{formType}";
             try
             {
-                IEnumerable<getBookDTO> result = await _bookservices.getBooks(formType);
-                if (result == null)
+                if (!_memoryCache.TryGetValue(cacheKey, out IEnumerable<getBookDTO> result))
                 {
-                    response = Ok(new Response
+                    Console.WriteLine("Getbooks Not cached");
+                    result = await _bookservices.getBooks(formType);
+                    if (result == null)
                     {
-                        StatusCode = 1,
-                        Message = "getBooks unsuccessfully ",
-                    });
-                }
-                _logger.LogInformation("Exited getBooks Of the BookController with result " + result);
+                        response = Ok(new Response
+                        {
+                            StatusCode = 1,
+                            Message = "getBooks unsuccessfully ",
+                        });
+                    }
+                    _logger.LogInformation("Exited getBooks Of the BookController with result " + result);
 
+                    _memoryCache.Set(cacheKey, result, memoryCacheOptions);
+                }
                 response = Ok(new Response
                 {
                     StatusCode = 0,
@@ -92,19 +106,24 @@ namespace BookManagement_Backend.Controllers
         {
             IActionResult response = BadRequest();
             _logger.LogInformation("getBookBYId Of the BookController with id is " + id);
-
+            string cacheKey = $"GetBookById{id}";
             try
             {
-                getBookDTO result = await _bookservices.getBookById(id);
-                if (result == null)
+                if (!_memoryCache.TryGetValue(cacheKey, out getBookDTO result))
                 {
-                    _logger.LogError("No Book Found check the book Id");
-                    response = Ok(new Response
+                    Console.WriteLine("getBookById Not cached");
+                    result = await _bookservices.getBookById(id);
+                    if (result == null)
                     {
-                        StatusCode = 1,
-                        Message = "No Book Found check the book Id",
+                        _logger.LogError("No Book Found check the book Id");
+                        response = Ok(new Response
+                        {
+                            StatusCode = 1,
+                            Message = "No Book Found check the book Id",
 
-                    });
+                        });
+                    }
+                    _memoryCache.Set(cacheKey, result, memoryCacheOptions);
                 }
                 _logger.LogInformation("Exited the getBookById successfully ");
                 response = Ok(new Response
@@ -218,10 +237,15 @@ namespace BookManagement_Backend.Controllers
 
             IActionResult response = BadRequest();
             _logger.LogInformation("createBook of Bookcontroller with id is ");
-
+            string cacheKey = "getData";
             try
             {
-                var res = await _bookservices.getData();
+                if (!_memoryCache.TryGetValue(cacheKey, out var res))
+                {
+                    Console.WriteLine("getData is not cached");
+                    res = await _bookservices.getData();
+                    _memoryCache.Set(cacheKey, res, memoryCacheOptions);
+                }
                 return Ok(res);
             }
             catch (Exception ex)
@@ -241,11 +265,26 @@ namespace BookManagement_Backend.Controllers
         {
             IActionResult response = BadRequest();
             _logger.LogInformation("FilterBook of Bookcontroller with id is ");
-
+            string cacheKey = $"filterBook_Category-{filterData.Category},Author-{filterData.Author},Name-{filterData.Name},Description-{filterData.Description},Pages-{filterData.Pages},Price-{filterData.Price},Language-{filterData.Language},Publisher-{filterData.Publisher},Form-{filterData.form},PageNumber-{filterData.pageNumber},PageSize-{filterData.pageSize},SortColumn-{filterData.sortColumn},SortaDirection-{filterData.sortDirection},";
+            string cacheKeyOfTotalCount = $"filterBookTotalCount_Category-{filterData.Category},Author-{filterData.Author},Name-{filterData.Name},Description-{filterData.Description},Pages-{filterData.Pages},Price-{filterData.Price},Language-{filterData.Language},Publisher-{filterData.Publisher},Form-{filterData.form},PageNumber-{filterData.pageNumber},PageSize-{filterData.pageSize},SortColumn-{filterData.sortColumn},SortaDirection-{filterData.sortDirection},";
             try
             {
-                var books = await _bookservices.FilterBook(filterData);
-                var booksCount = await _bookservices.getBookCount(filterData);
+                if (_memoryCache.TryGetValue(cacheKey, out IEnumerable<getBookDTO> books) && _memoryCache.TryGetValue(cacheKeyOfTotalCount, out int booksCount))
+                {
+                    Console.WriteLine("Filtered Books from the Cache");
+                    return Ok(new Response
+                    {
+                        StatusCode = 0,
+                        Message = "Books filtered successfully.",
+                        Data = new
+                        {
+                            books,
+                            count = booksCount
+                        }
+                    });
+                }
+                books = await _bookservices.FilterBook(filterData);
+                booksCount = await _bookservices.getBookCount(filterData);
                 if (booksCount == 0)
                 {
                     response = Ok(new Response
@@ -257,9 +296,8 @@ namespace BookManagement_Backend.Controllers
                     return response;
 
                 }
-
-
-                Console.WriteLine("Filter form executed successfully.");
+                _memoryCache.Set(cacheKey, books, memoryCacheOptions);
+                _memoryCache.Set(cacheKeyOfTotalCount, booksCount, memoryCacheOptions);
 
                 return Ok(new Response
                 {
@@ -285,7 +323,7 @@ namespace BookManagement_Backend.Controllers
                 return response;
             }
         }
-        
+
     }
 
 }

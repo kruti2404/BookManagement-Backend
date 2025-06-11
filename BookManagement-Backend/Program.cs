@@ -56,6 +56,7 @@ namespace BookManagement_Backend
                 };
 
             });
+            builder.Services.AddMemoryCache();
 
             // Add services to the container.
             builder.Services.AddTransient<Bookservices>();
